@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cadastro - CuidaMente</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #32cd32;
+      --primary-hover: #2e8b57;
+      --link: #1e90ff;
+    }
+    
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #f0f8ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    
+    .container {
+      background: white;
+      padding: 2rem 3rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 320px;
+      text-align: center;
+    }
+    
+    h2 {
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+      text-align: left;
+    }
+    
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      margin-bottom: 1.2rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    
+    button {
+      width: 100%;
+      background-color: var(--primary);
+      border: none;
+      color: white;
+      padding: 0.8rem;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.3s;
+    }
+    
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .message {
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+      display: none;
+    }
+    
+    .error-message { 
+      color: #d32f2f;
+      background-color: #fde0e0;
+    }
+    
+    .success-message { 
+      color: #388e3c;
+      background-color: #e8f5e9;
+    }
+    
+    .switch-form {
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .switch-form a {
+      color: var(--link);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .switch-form a:hover {
+      text-decoration: underline;
+    }
+    
+    .password-rules {
+      font-size: 0.8rem;
+      color: #666;
+      text-align: left;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Cadastro</h2>
+  
+  <div class="message error-message" id="error-msg"></div>
+  <div class="message success-message" id="success-msg"></div>
+  
+  <form id="register-form">
+    <label for="username">Usuário</label>
+    <input type="text" id="username" required aria-label="Nome de usuário" />
+    
+    <label for="password">Senha</label>
+    <input type="password" id="password" required aria-label="Senha" minlength="6" />
+    <div class="password-rules">Mínimo 6 caracteres</div>
+    
+    <button type="submit">Cadastrar</button>
+  </form>
+  
+  <div class="switch-form">
+    Já tem uma conta? <a href="login.html">Faça login</a>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('register-form');
+  const errorMsg = document.getElementById('error-msg');
+  const successMsg = document.getElementById('success-msg');
+
+  // Redirecionar se já estiver logado
+  if (localStorage.getItem('authToken')) {
+    window.location.href = 'chatbot.html';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMsg.style.display = 'none';
+    successMsg.style.display = 'none';
+
+    const username = form.username.value.trim();
+    const password = form.password.value.trim();
+
+    // Validação adicional
+    if (password.length < 6) {
+      errorMsg.textContent = 'A senha deve ter pelo menos 6 caracteres';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro no cadastro');
+      }
+
+      successMsg.textContent = data.message || 'Cadastro realizado com sucesso!';
+      successMsg.style.display = 'block';
+      form.reset();
+
+      // Auto-redirecionamento após 2 segundos
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 2000);
+      
+    } catch (error) {
+      errorMsg.textContent = error.message;
+      errorMsg.style.display = 'block';
+    }
+  });
+</script>
+
+</body>
+</html>
